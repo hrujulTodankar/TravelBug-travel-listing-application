@@ -15,16 +15,37 @@
   <div class="buttons row mt-4">
     <div class="col-3">
   <form method="get" action="/listings/<%= onelisting._id %>/edit">
-        <button class="btn btn-danger">Edit </button>
+        <button class=" edit btn btn-danger">Edit </button>
        </form>
        </div>
 
        <div class="col-8">
     <form method="post" action="/listings/<%= onelisting._id %>?_method=Delete">
         <button class="btn btn-danger">Delete </button>
-       </form>   
+       </form>
+       
+       <br>
+       
        </div>
-</div>
-</div>
+   </div>
+ </div >
+       <div class="col-8 offset-3 mb-3">
+        <hr>
+         <h5>Leave A Review</h5>
+        <form action="/listings/<%= onelisting._id %>/reviews" method="POST" novalidate class="needs-validation">
+          <div>
+            <label for="rating" class="form-label">Rating : </label><br>
+            <input type="range" min="1" max="5" step="1" id="rating" name="review[rating]" class="form-range">
+            <output for="range4" id="rangeValue" aria-hidden="true"></output>
+          </div>
+          <div >
+            <label for="comment" class="form-label"></label>
+            <textarea name="review[comment]" id="comment" cols="30" rows="10" class="form-control"></textarea>
+            <div class="invaild-feedback">Please submit some comments for review</div>
+          </div>
+          <button class="btn btn-outline-dark mt-4">Submit</button>
+        </form>
+       </div>
       
+    
 </body>
