@@ -113,9 +113,8 @@ app.post("/listings/:id/reviews" , validateReview , wrapAsync( async (req , res)
   await newReview.save();
   listing.reviews.push(newReview._id);
   await listing.save();
-  //res.redirect(`/listings/${id}`);
   console.log("new review added");
-  res.send("Review added successfully");
+  res.redirect(`/listings/${id}`);
 }));
 
 //Show route
