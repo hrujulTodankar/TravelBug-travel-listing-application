@@ -6,6 +6,9 @@ const methodOverride = require("method-override");
 const ejsMate = require("ejs-mate");
 const listings = require("./routes/listing.js");
 const reviews = require("./routes/review.js");
+const session = require("express-session");
+const flash = require("connect-flash");
+const ExpressError = require("./utils/ExpressError.js");
 
 main().then(() => {
     console.log("connected to DB");
@@ -23,97 +26,32 @@ app.use(methodOverride("_method"));
 app.engine("ejs" , ejsMate);
 app.use(express.static(path.join(__dirname , "/public")));
 
-// //index route
-// app.get("/listings" ,wrapAsync(async (req , res) => {
-//   let alllisting =  await  Listing.find({});
-//   res.render("./listings/index.ejs" , { alllisting })
-//   }
-// ));  
+const sessionOptions = {
+  secret : "mysupersecretcode",
+  resave : false,
+  saveUninitialized : true,
+};
 
+app.use(session(sessionOptions));
+app.use(flash());
 
-// //new listing route
-// app.get("/listings/new" , wrapAsync((req ,res) => {
-//   res.render("./listings/new.ejs");
-// }
-// ));
+app.use((req , res , next) => {
+  res.locals.success = req.flash("success");
+  res.locals.error = req.flash("error");
+  next();
+});
 
-// const validateListing = (req, res, next) => {
-//   // Assuming listingSchema is a Joi schema
-//   let { error } = listingSchema.validate(req.body); 
-//   if (error) {
-//     // Use the 'error' variable and extract the message
-//     let errMsg = error.details.map(el => el.message).join(",");
-//     throw new ExpressError(400, errMsg);
-//   } else {
-//     next();
-//   }
-// };
-
-// //create route
-// app.post("/listings" , validateListing ,wrapAsync(async (req , res , next) => {
-//   const newListing = new Listing(req.body.listing);
-//   await newListing.save();
-//   res.redirect("/listings");
-// })
-// );
-
-// //edit route
-// app.get("/listings/:id/edit" ,wrapAsync(async (req ,res) => {
-//   let { id } = req.params;
-//   let listing = await Listing.findById(id) ;
-//   res.render("listings/edit.ejs" , { listing });
-// }
-// ));
-
-// //update route
-// app.put("/listings/:id/" ,validateListing , wrapAsync(async(req ,res) => {
-//   let {id} = req.params;
-//   await Listing.findByIdAndUpdate(id , {...req.body.listing} );
-//   res.redirect("/listings");
-// }
-// ));
-
-// //delete route
-// app.delete("/listings/:id" ,wrapAsync(async (req ,res) =>{
-//   let {id} = req.params;
-//   let deletedlist = await Listing.findByIdAndDelete(id);
-//   console.log(deletedlist);
-//   res.redirect("/listings");
-// }
-// ));
-
-// //Reviews Route
-// //post route
-// app.post("/listings/:id/reviews" , validateReview , wrapAsync( async (req , res) => {
-//   let { id } = req.params;
-//   let listing = await Listing.findById(id);
-//   let newReview = new review(req.body.review);
-//   await newReview.save();
-//   listing.reviews.push(newReview._id);
-//   await listing.save();
-//   console.log("new review added");
-//   res.redirect(`/listings/${id}`);
-// }));
-
-// //delete review route
-// app.delete("/listings/:id/reviews/:reviewId" , wrapAsync( async (req , res) => {  
-//   let { id , reviewId } = req.params;
-//   await Listing.findByIdAndUpdate(id , { $pull : { reviews : reviewId } } ); //bcoz we had to update our array in listing basically the review should be removed from the listing's reviews array
-//   await review.findByIdAndDelete(reviewId); //this is to delete the review from reviews collection
-//   res.redirect(`/listings/${id}`);
-// }));
-
-// //Show route
-// app.get("/listings/:id" , wrapAsync(async (req ,res) => {
-//   let {id} = req.params;
-//   let onelisting =  await Listing.findById(id).populate("reviews");
-//   res.render("listings/show.ejs" ,{ onelisting} );
-// }
-// ));
+app.get("/" , (req , res) => {
+  res.send("Hi , I am root");
+});
 
 app.use("/listings" , listings);
 app.use("/listings/:id/reviews" , reviews);
 
+// 404 handler - use "{*path}" instead of "*" for Express 5
+app.all("{*path}" , (req , res , next) => {
+  next(new ExpressError(404 , "Page not found"));
+});
 
 app.use((err , req , res , next) => {
   let {statuscode = 500 , message = "Something went wrong"} = err ;
@@ -122,4 +60,4 @@ app.use((err , req , res , next) => {
 
 app.listen(8080 , () => {
     console.log("server is listening to port 8080");
-})
+});

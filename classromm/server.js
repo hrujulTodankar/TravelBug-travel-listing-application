@@ -1,41 +1,61 @@
 const express   = require("express");
 const cookieParser = require("cookie-parser");
 const { PawPrint } = require("lucide-react");
-// const users = require("./routes/users.js");
-// const post  = require("./routes/posts.js");
-
+const flash = require("connect-flash");
+const session = require("express-session");
 const app = express();
-app.use(cookieParser("Secretcode"));
+const path = require("path");
 
-app.get("/getsignedcookie" , (req , res) => {
-    res.cookie("username" , "johnDoe123" , { signed : true });
-    res.cookie("madeIn" , "India" , { signed : true });
-    console.log(req.signedCookies);
-    res.send("requested signed cookies ");
+app.set("view engine" , "ejs");
+app.set("views", path.join(__dirname , "views"));
+
+app.use(express.urlencoded({extended : true}));
+app.use(cookieParser());
+app.use(session({
+    secret: "mysupersecretstring",
+    resave: false,
+    saveUninitialized: true,
+    // cookie: { secure: true }
+}));
+
+app.use(flash());
+app.use((req, res, next) => {
+    res.locals.success = req.flash("success");
+    res.locals.error = req.flash("error");
+    next();
 });
 
-app.get("/verifysignedcookie" , (req , res) => {
-    console.log("Signed Cookies :" , req.signedCookies);
-    res.send(req.cookies);    
+
+app.get("/register", (req, res) => {
+    let {name = "anonymous"} = req.query;
+    if(name === "anonymous"){
+        req.flash("error", "Name cannot be anonymous");
+    }else{
+        req.flash("success", "You have been registered successfully");
+    }
+    req.session.name = name;
+    res.redirect("/hello");
 });
 
-app.get("/getcookie" , (req , res) => {
-    res.cookie("username" , "johnDoe123");
-    res.cookie("madeIn" , "India");
-    console.log(req.cookies);
-    res.send(req.cookies);
+app.get ("/hello", (req, res) => {
+    res.render("page.ejs" , { name : req.session.name });   
 });
 
-// //use routes 
 
-// app.use("/users" , users);
-// app.use("/posts" , post);
+
+
+// app.get("/reqcount", (req, res) => {
+//     if (req.session.count) {
+//         req.session.count++;
+//         res.send(`you sent a request ${req.session.count} times`);
+//         return;
+//     } else{
+//        req.session.count = 1;
+//         res.send(`you sent a request ${req.session.count} times`);
+//         return;
+//     }
+// });
 
 app.listen(3000 , () => {
     console.log("Server started at port 3000");
-});
-
-app.get ("/" , (req , res) => {
-    res.send("Welcome to root route");
-    console.dir("Cookies :" , req.cookies);
 });
