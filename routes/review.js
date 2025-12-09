@@ -28,8 +28,8 @@ router.post("/" , validateReview , wrapAsync( async (req , res) => {
   await newReview.save();
   listing.reviews.push(newReview._id);
   await listing.save();
-  console.log("new review added");
-  res.redirect(`/listings/${id}`);
+  req.flash("success" , "New Review Created");
+  return res.redirect(`/listings/${id}`);
 }));
 
 //delete review route
@@ -37,7 +37,8 @@ router.delete("/:reviewId" , wrapAsync( async (req , res) => {
   let { id , reviewId } = req.params;
   await Listing.findByIdAndUpdate(id , { $pull : { reviews : reviewId } } ); //bcoz we had to update our array in listing basically the review should be removed from the listing's reviews array
   await Review.findByIdAndDelete(reviewId); //this is to delete the review from reviews collection
-  res.redirect(`/listings/${id}`);
+  req.flash("success" , "Review Deleted");
+  return res.redirect(`/listings/${id}`);
 }));
 
 module.exports = router;

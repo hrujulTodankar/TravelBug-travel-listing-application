@@ -1,63 +1,106 @@
+// app.js
 const express = require("express");
 const app = express();
 const mongoose = require("mongoose");
 const path = require("path");
 const methodOverride = require("method-override");
 const ejsMate = require("ejs-mate");
-const listings = require("./routes/listing.js");
+const listings = require("./routes/listings.js"); // <-- make sure filename matches
 const reviews = require("./routes/review.js");
 const session = require("express-session");
 const flash = require("connect-flash");
 const ExpressError = require("./utils/ExpressError.js");
+const passport  = require("passport");
+const LocalStrategy = require("passport-local");
+const User = require("./models/user.js"); 
 
+
+
+// Connect to MongoDB
 main().then(() => {
-    console.log("connected to DB");
-})
-.catch(err => console.log(err));
+  console.log("connected to DB");
+}).catch(err => console.log(err));
 
 async function main() {
   await mongoose.connect('mongodb://127.0.0.1:27017/travelBug');
 }
 
-app.set("view engine" , "ejs");
-app.set("views", path.join(__dirname , "views"));
-app.use(express.urlencoded({extended : true}));
+app.set("view engine", "ejs");
+app.set("views", path.join(__dirname, "views"));
+app.use(express.urlencoded({ extended: true }));
 app.use(methodOverride("_method"));
-app.engine("ejs" , ejsMate);
-app.use(express.static(path.join(__dirname , "/public")));
+app.engine("ejs", ejsMate);
+app.use(express.static(path.join(__dirname, "public")));
 
 const sessionOptions = {
-  secret : "mysupersecretcode",
-  resave : false,
-  saveUninitialized : true,
+  secret: "mysupersecretcode",
+  resave: false,
+  saveUninitialized: true,
+  cookie: {
+    expires: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+    maxAge: 7 * 24 * 60 * 60 * 1000,
+    httpOnly: true,
+  },
 };
 
 app.use(session(sessionOptions));
 app.use(flash());
 
-app.use((req , res , next) => {
+app.use(passport.initialize());
+app.use(passport.session());   
+passport.use(new LocalStrategy(User.authenticate())); // Use User model for authentication
+passport.serializeUser(User.serializeUser());
+passport.deserializeUser(User.deserializeUser());   
+
+
+app.use((req, res, next) => {
   res.locals.success = req.flash("success");
   res.locals.error = req.flash("error");
+  // you can also add res.locals.currentUser = req.user if using passport
   next();
 });
 
-app.get("/" , (req , res) => {
-  res.send("Hi , I am root");
+// convenience root
+app.get("/", (req, res) => {
+  res.send("Hi, I am root");
 });
 
-app.use("/listings" , listings);
-app.use("/listings/:id/reviews" , reviews);
-
-// 404 handler - use "{*path}" instead of "*" for Express 5
-app.all("{*path}" , (req , res , next) => {
-  next(new ExpressError(404 , "Page not found"));
+// Optional: convenience redirect for someone visiting /new
+app.get("/new", (req, res) => {
+  return res.redirect("/listings/new");
 });
 
-app.use((err , req , res , next) => {
-  let {statuscode = 500 , message = "Something went wrong"} = err ;
-  res.status(statuscode).render("./listings/error.ejs" , { message })
+app.get("/fakeUser", async (req, res) => {
+  const user = new User(
+    { email: "student@gmail.com", 
+      username: "student" 
+    }
+  );
+  const newUser = await User.register(user, "Student1234");
+  res.send(newUser);
+}  
+ );
+
+// Mount listing routes at /listings
+app.use("/listings", listings);
+app.use("/listings/:id/reviews", reviews);
+
+// 404 handler - catch unmatched routes
+app.all("{*path}", (req, res, next) => {
+  next(new ExpressError(404, "Page not found"));
 });
 
-app.listen(8080 , () => {
-    console.log("server is listening to port 8080");
+// central error handler
+app.use((err, req, res, next) => {
+  if (res.headersSent) {
+    return next(err);
+  }
+  const statuscode = err.statuscode || 500;
+  const message = err.message || "Something went wrong";
+  res.render("error.ejs", { message });
+});
+
+const PORT = process.env.PORT || 8080;
+app.listen(PORT, () => {
+  console.log(`server is listening on port ${PORT}`);
 });
