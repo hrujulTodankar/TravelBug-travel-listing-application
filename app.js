@@ -15,6 +15,11 @@ const LocalStrategy = require("passport-local");
 const User = require("./models/user.js"); 
 
 
+const listingsroutes = require("./routes/listings.js"); // <-- make sure filename matches
+const reviewsroutes = require("./routes/review.js");
+const userroutes = require("./routes/user.js");
+
+
 
 // Connect to MongoDB
 main().then(() => {
@@ -70,20 +75,11 @@ app.get("/new", (req, res) => {
   return res.redirect("/listings/new");
 });
 
-app.get("/fakeUser", async (req, res) => {
-  const user = new User(
-    { email: "student@gmail.com", 
-      username: "student" 
-    }
-  );
-  const newUser = await User.register(user, "Student1234");
-  res.send(newUser);
-}  
- );
 
 // Mount listing routes at /listings
-app.use("/listings", listings);
-app.use("/listings/:id/reviews", reviews);
+app.use("/listings", listingsroutes);
+app.use("/listings/:id/reviews", reviewsroutes);
+app.use("/" , userroutes);
 
 // 404 handler - catch unmatched routes
 app.all("{*path}", (req, res, next) => {

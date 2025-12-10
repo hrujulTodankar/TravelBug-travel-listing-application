@@ -1,0 +1,29 @@
+<% layout("/layouts/boilerplate.ejs") -%>
+
+
+<div class="row mt-3">
+    <div class="col-md-6 offset-md-3">
+        <div class="wholecard">
+             <h1 class="col-md-6 offset-md-3 p-3 text-center">Login For Existing User</h1>
+                <form method="POST" action="/login" novalidate class="needs-validation container-fluid" novalidate>
+                    <div>
+                        <label for="username" class="form-label" ></label>
+                        <input id="username" type="username" name="username" class="form-control" placeholder="Enter username" required>
+                        <div class="invalid-feedback">Email Required</div>
+                    </div>
+
+                    <div>
+                        <label for="password" class="form-label" ></label>
+                        <input id="password" type="password" name="password" class="form-control" placeholder="Enter Password" required>
+                        <div class="invalid-feedback">Password Required</div>
+                    </div>
+                    <br>
+                    <button class="btn btn-outline-success">Login</button>
+                    <br><br>
+                    Not an Existing User? <a href="/signup">Signup</a>
+                    <br><br><br>
+        </div>
+    </div>
+</div>
+
+
