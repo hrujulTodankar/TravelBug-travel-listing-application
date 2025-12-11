@@ -14,7 +14,6 @@ const passport  = require("passport");
 const LocalStrategy = require("passport-local");
 const User = require("./models/user.js"); 
 
-
 const listingsroutes = require("./routes/listings.js"); // <-- make sure filename matches
 const reviewsroutes = require("./routes/review.js");
 const userroutes = require("./routes/user.js");
@@ -40,10 +39,8 @@ app.use(express.static(path.join(__dirname, "public")));
 const sessionOptions = {
   secret: "mysupersecretcode",
   resave: false,
-  saveUninitialized: true,
+  saveUninitialized: false,
   cookie: {
-    expires: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
-    maxAge: 7 * 24 * 60 * 60 * 1000,
     httpOnly: true,
   },
 };
@@ -52,10 +49,11 @@ app.use(session(sessionOptions));
 app.use(flash());
 
 app.use(passport.initialize());
-app.use(passport.session());   
+app.use(passport.session());
+
 passport.use(new LocalStrategy(User.authenticate())); // Use User model for authentication
 passport.serializeUser(User.serializeUser());
-passport.deserializeUser(User.deserializeUser());   
+passport.deserializeUser(User.deserializeUser());
 
 
 app.use((req, res, next) => {
@@ -74,7 +72,6 @@ app.get("/", (req, res) => {
 app.get("/new", (req, res) => {
   return res.redirect("/listings/new");
 });
-
 
 // Mount listing routes at /listings
 app.use("/listings", listingsroutes);

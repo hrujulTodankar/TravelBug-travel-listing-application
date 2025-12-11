@@ -6,6 +6,7 @@ const { listingSchema } = require("../schemas.js");
 const ExpressError = require("../utils/ExpressError.js");
 const Listing = require("../models/listing.js");
 const mongoose = require("mongoose");
+const { isLoggedIn } = require("../middleware.js");
 
 // Validator middleware (assumes form uses `listing[...]` shape)
 const validateListing = (req, res, next) => {
@@ -26,12 +27,12 @@ router.get("/", wrapAsync(async (req, res) => {
 
 // NEW - GET /listings/new
 // IMPORTANT: path is "/new" (not "/listings/new") because router is mounted at /listings
-router.get("/new", (req, res) => {
+router.get("/new",isLoggedIn, (req, res) => {
   return res.render("listings/new.ejs");
 });
 
 // CREATE - POST /listings
-router.post("/", validateListing, wrapAsync(async (req, res) => {
+router.post("/", validateListing, isLoggedIn, wrapAsync(async (req, res) => {
   const listingData = req.body.listing ?? req.body;
   const newListing = new Listing({
     title: listingData.title,
@@ -62,7 +63,7 @@ router.get("/:id", wrapAsync(async (req, res) => {
 }));
 
 // EDIT - GET /listings/:id/edit
-router.get("/:id/edit", wrapAsync(async (req, res) => {
+router.get("/:id/edit",isLoggedIn, wrapAsync(async (req, res) => {
   const { id } = req.params;
   if (!mongoose.Types.ObjectId.isValid(id)) {
     throw new ExpressError(400, "Invalid listing id");
@@ -77,7 +78,7 @@ router.get("/:id/edit", wrapAsync(async (req, res) => {
 }));
 
 // UPDATE - PUT /listings/:id
-router.put("/:id", validateListing, wrapAsync(async (req, res) => {
+router.put("/:id", validateListing , isLoggedIn ,  wrapAsync(async (req, res) => {
   const { id } = req.params;
   if (!mongoose.Types.ObjectId.isValid(id)) {
     throw new ExpressError(400, "Invalid listing id");
@@ -89,7 +90,7 @@ router.put("/:id", validateListing, wrapAsync(async (req, res) => {
 }));
 
 // DELETE - DELETE /listings/:id
-router.delete("/:id", wrapAsync(async (req, res) => {
+router.delete("/:id", isLoggedIn , wrapAsync(async (req, res) => {
   const { id } = req.params;
   if (!mongoose.Types.ObjectId.isValid(id)) {
     throw new ExpressError(400, "Invalid listing id");

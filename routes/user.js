@@ -30,27 +30,42 @@ router.get("/login", (req, res) => {
   res.render("listings/login.ejs");
 }); 
 
-// router.post("/login", passport.authenticate("local", {failureRedirect: "/login", failureFlash: true}), 
-// async(req, res) => {
-//    await req.flash("success", "Welcome back!");
-//    res.send("Welcome back!");
-// });
-
-// routes/auth.js (or listings router where login lives)
-
-router.post('/login', (req, res, next) => {
-  passport.authenticate('local', (err, user, info) => {
-    if (err) return next(err);
-    if (!user) {
-      req.flash('error', info?.message || 'Login failed');
-      return res.redirect('/login');
+router.post("/login", async (req, res) => {
+  try {
+    const { username, password } = req.body;
+    
+    const user = await User.findOne({ username });
+    
+    if (user) {
+      const authResult = await user.authenticate(password);
+      if (authResult.user) {
+        req.login(user, (err) => {
+          if (err) {
+            console.error("Login error:", err);
+            req.flash("error", "Login failed");
+            return res.redirect("/login");
+          }
+          req.flash("success", "Welcome back!");
+          return res.redirect("/listings");
+        });
+      } else {
+        req.flash("error", "Invalid username or password");
+        return res.redirect("/login");
+      }
+    } else {
+      req.flash("error", "Invalid username or password");
+      return res.redirect("/login");
     }
-    req.logIn(user, (err) => {
-      if (err) return next(err);
-      return res.redirect('/dashboard');
-    });
-  })(req, res, next);
+  } catch (error) {
+    console.error("Login error:", error);
+    req.flash("error", "Login error");
+    return res.redirect("/login");
+  }
 });
+
+
+
+
 
 
 module.exports = router;
