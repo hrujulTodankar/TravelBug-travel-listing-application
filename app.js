@@ -13,6 +13,8 @@ const ExpressError = require("./utils/ExpressError.js");
 const passport  = require("passport");
 const LocalStrategy = require("passport-local");
 const User = require("./models/user.js"); 
+const { saveRedirectUrl } = require("./middleware.js");
+const { isLoggedIn } = require("./middleware.js");
 
 const listingsroutes = require("./routes/listings.js"); // <-- make sure filename matches
 const reviewsroutes = require("./routes/review.js");
@@ -59,7 +61,7 @@ passport.deserializeUser(User.deserializeUser());
 app.use((req, res, next) => {
   res.locals.success = req.flash("success");
   res.locals.error = req.flash("error");
-  // you can also add res.locals.currentUser = req.user if using passport
+  res.locals.currUser = req.user ;
   next();
 });
 
@@ -69,8 +71,8 @@ app.get("/", (req, res) => {
 });
 
 // Optional: convenience redirect for someone visiting /new
-app.get("/new", (req, res) => {
-  return res.redirect("/listings/new");
+app.get("/new",isLoggedIn, (req, res) => {
+  return res.redirect(res.locals.redirectUrl || "/listings/new");
 });
 
 // Mount listing routes at /listings

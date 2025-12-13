@@ -3,6 +3,7 @@ const passport = require("passport");
 const router = express.Router({mergeParams : true});
 const User = require("../models/user.js");
 const wrapAsync = require("../utils/wrapAsync");
+const { saveRedirectUrl } = require("../middleware.js");
 //const bcrypt = require('bcrypt'); // used only as fallback check if needed
 
 
@@ -15,9 +16,13 @@ router.post("/signup", wrapAsync(async (req, res) => {
    let { username, email, password } = req.body;
     const newUser = new User({ username, email }); 
     const registeredUser = await User.register(newUser,password);
-    console.log(registeredUser);
-    req.flash("success", "Welcome to TravelBug");
-    res.redirect("/listings");
+    req.login(registeredUser, (err) => {
+      if (err) {
+        return next(err);
+      }
+      req.flash("success", "Welcome to TravelBug");
+      res.redirect("/listings");
+    });
  }
  catch(e){
     req.flash("error", e.message);
@@ -30,7 +35,7 @@ router.get("/login", (req, res) => {
   res.render("listings/login.ejs");
 }); 
 
-router.post("/login", async (req, res) => {
+router.post("/login",saveRedirectUrl, async (req, res) => {
   try {
     const { username, password } = req.body;
     
@@ -46,7 +51,8 @@ router.post("/login", async (req, res) => {
             return res.redirect("/login");
           }
           req.flash("success", "Welcome back!");
-          return res.redirect("/listings");
+          let redirectUrl = res.locals.redirectUrl || "/listings";
+          return res.redirect(redirectUrl);
         });
       } else {
         req.flash("error", "Invalid username or password");
@@ -63,6 +69,16 @@ router.post("/login", async (req, res) => {
   }
 });
 
+router.get("/logout", (req, res , next) => {
+  req.logout((err) => {
+    if (err) {  
+      return next(err);
+      return res.redirect("/listings");
+    }
+    req.flash("success", "You are logged out!");
+    res.redirect("/listings");
+  });
+});
 
 
 

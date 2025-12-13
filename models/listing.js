@@ -27,7 +27,11 @@ const listingSchema = new Schema({
             type : Schema.Types.ObjectId,
             ref : "Review",
         }  
-    ]
+    ],
+    owner : {
+        type : Schema.Types.ObjectId,
+        ref : "User",
+    }
 });
 
 listingSchema.post("findOneAndDelete" , async function(listing) { //whenever a listing is deleted , this middleware will be called
