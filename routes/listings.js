@@ -3,21 +3,11 @@ const express = require("express");
 const router = express.Router();
 const wrapAsync = require("../utils/wrapAsync.js");
 const { listingSchema } = require("../schemas.js");
-const ExpressError = require("../utils/ExpressError.js");
-const Listing = require("../models/listing.js");
 const mongoose = require("mongoose");
-const { isLoggedIn } = require("../middleware.js");
+const Listing = require("../models/listing.js");
+const { isLoggedIn , isOwner ,validateListing } = require("../middleware.js");
 
 // Validator middleware (assumes form uses `listing[...]` shape)
-const validateListing = (req, res, next) => {
-  const dataToValidate = req.body.listing ?? req.body;
-  const { error } = listingSchema.validate(dataToValidate);
-  if (error) {
-    const errMsg = error.details.map(el => el.message).join(", ");
-    throw new ExpressError(400, errMsg);
-  }
-  next();
-};
 
 // INDEX - GET /listings
 router.get("/", wrapAsync(async (req, res) => {
@@ -32,7 +22,7 @@ router.get("/new",isLoggedIn, (req, res) => {
 });
 
 // CREATE - POST /listings
-router.post("/", validateListing, isLoggedIn, wrapAsync(async (req, res) => {
+router.post("/", isLoggedIn,isOwner,validateListing, wrapAsync(async (req, res) => {
   const listingData = req.body.listing ?? req.body;
   const newListing = new Listing({
     title: listingData.title,
@@ -42,6 +32,7 @@ router.post("/", validateListing, isLoggedIn, wrapAsync(async (req, res) => {
     location: listingData.location,
     country: listingData.country
   });
+  newListing.owner = req.user._id;
   await newListing.save();
   req.flash("success", "New Listing Created");
   return res.redirect("/listings");
@@ -54,16 +45,17 @@ router.get("/:id", wrapAsync(async (req, res) => {
   if (!mongoose.Types.ObjectId.isValid(id)) {
     throw new ExpressError(400, "Invalid listing id");
   }
-  const onelisting = await Listing.findById(id).populate("reviews");
+  const onelisting = await Listing.findById(id).populate("reviews").populate("owner");
   if (!onelisting) {
     req.flash("error", "Listing does not exist!");
     return res.redirect("/listings");
   }
+  console.log(onelisting);
   return res.render("listings/show.ejs", { onelisting });
 }));
 
 // EDIT - GET /listings/:id/edit
-router.get("/:id/edit",isLoggedIn, wrapAsync(async (req, res) => {
+router.get("/:id/edit",isLoggedIn,isOwner, wrapAsync(async (req, res) => {
   const { id } = req.params;
   if (!mongoose.Types.ObjectId.isValid(id)) {
     throw new ExpressError(400, "Invalid listing id");
@@ -78,7 +70,7 @@ router.get("/:id/edit",isLoggedIn, wrapAsync(async (req, res) => {
 }));
 
 // UPDATE - PUT /listings/:id
-router.put("/:id", validateListing , isLoggedIn ,  wrapAsync(async (req, res) => {
+router.put("/:id", isLoggedIn , isOwner, validateListing, wrapAsync(async (req, res) => {
   const { id } = req.params;
   if (!mongoose.Types.ObjectId.isValid(id)) {
     throw new ExpressError(400, "Invalid listing id");
@@ -90,7 +82,7 @@ router.put("/:id", validateListing , isLoggedIn ,  wrapAsync(async (req, res) =>
 }));
 
 // DELETE - DELETE /listings/:id
-router.delete("/:id", isLoggedIn , wrapAsync(async (req, res) => {
+router.delete("/:id", isLoggedIn ,isOwner, wrapAsync(async (req, res) => {
   const { id } = req.params;
   if (!mongoose.Types.ObjectId.isValid(id)) {
     throw new ExpressError(400, "Invalid listing id");
