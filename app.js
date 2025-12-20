@@ -5,8 +5,6 @@ const mongoose = require("mongoose");
 const path = require("path");
 const methodOverride = require("method-override");
 const ejsMate = require("ejs-mate");
-const listings = require("./routes/listings.js"); // <-- make sure filename matches
-const reviews = require("./routes/review.js");
 const session = require("express-session");
 const flash = require("connect-flash");
 const ExpressError = require("./utils/ExpressError.js");
@@ -17,7 +15,7 @@ const { saveRedirectUrl } = require("./middleware.js");
 const { isLoggedIn } = require("./middleware.js");
 
 const listingsroutes = require("./routes/listings.js"); // <-- make sure filename matches
-const reviewsroutes = require("./routes/review.js");
+const reviewsroutes = require("./routes/reviews.js");
 const userroutes = require("./routes/user.js");
 
 

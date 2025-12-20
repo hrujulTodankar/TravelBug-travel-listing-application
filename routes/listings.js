@@ -15,7 +15,7 @@ router.get("/", wrapAsync(listingController.index));
 router.get("/new",isLoggedIn,listingController.renderNewForm );
 
 // CREATE - POST /listings
-router.post("/", isLoggedIn,isOwner,validateListing, wrapAsync(listingController.createListing));
+router.post("/", isLoggedIn,validateListing, wrapAsync(listingController.createListing));
 
 // SHOW - GET /listings/:id
 router.get("/:id", wrapAsync(listingController.showListing));

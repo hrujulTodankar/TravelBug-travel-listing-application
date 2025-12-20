@@ -11,7 +11,7 @@
     <li class="list-group-item">Price : &#x20b9; <%= onelisting.price.toLocaleString("en-IN") %></li>
     <li class="list-group-item">Location : <%= onelisting.location %></li>
     <li class="list-group-item">Country : <%= onelisting.country %></li>
-    <li class="list-group-item">Listed By : <i><%= onelisting.owner.username %></i></li>
+    <li class="list-group-item">Listed By : <i><%= onelisting.owner ? onelisting.owner.username : 'Unknown' %></i></li>
   </ul>
 
   <div class="buttons row mt-2 mb-2" >
@@ -57,7 +57,7 @@
             <% for(let review of onelisting.reviews) { %>
               <p>Rating : <b><%= review.rating %> Stars</b></p>
               <p>Comment : <i><%= review.comment %></i></p>
-              <p>Author : @<i><%= review.author.username %></i></p>
+              <p>Author : @<i><%= review.author ? review.author.username : 'Unknown' %></i></p>
               <form method="post" action="/listings/<%= onelisting._id %>/reviews/<%= review._id %>?_method=DELETE" >
                 <button class="btn btn-danger btn-sm">delete</button>
               </form>
