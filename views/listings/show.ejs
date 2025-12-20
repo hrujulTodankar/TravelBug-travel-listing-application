@@ -27,7 +27,7 @@
  </div >
 
 
- <% if(currUser) { %>
+ <% if(currUser && onelisting.owner._id.equals(currUser._id)) { %>
  <div class="review col-8 offset-3 mb-3">
         <hr>
          <h5>Leave A Review</h5>
@@ -57,6 +57,7 @@
             <% for(let review of onelisting.reviews) { %>
               <p>Rating : <b><%= review.rating %> Stars</b></p>
               <p>Comment : <i><%= review.comment %></i></p>
+              <p>Author : <i><%= review.author.username %></i></p>
               <form method="post" action="/listings/<%= onelisting._id %>/reviews/<%= review._id %>?_method=DELETE" >
                 <button class="btn btn-danger btn-sm">delete</button>
               </form>

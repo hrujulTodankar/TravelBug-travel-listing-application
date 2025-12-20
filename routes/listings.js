@@ -45,7 +45,7 @@ router.get("/:id", wrapAsync(async (req, res) => {
   if (!mongoose.Types.ObjectId.isValid(id)) {
     throw new ExpressError(400, "Invalid listing id");
   }
-  const onelisting = await Listing.findById(id).populate("reviews").populate("owner");
+  const onelisting = await Listing.findById(id).populate({path :"reviews" , populate: { path: "author" } }).populate("owner");
   if (!onelisting) {
     req.flash("error", "Listing does not exist!");
     return res.redirect("/listings");
