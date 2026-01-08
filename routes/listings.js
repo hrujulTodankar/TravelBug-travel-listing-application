@@ -11,7 +11,7 @@ const listingController = require("../controllers/listing.js")
 // INDEX - GET /listings
 router.get("/", wrapAsync(listingController.index));
 
-
+// NEW - GET /listings/new
 router.get("/new",isLoggedIn,listingController.renderNewForm );
 
 // CREATE - POST /listings
