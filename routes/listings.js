@@ -6,27 +6,22 @@ const mongoose = require("mongoose");
 const Listing = require("../models/listing.js");
 const { isLoggedIn , isOwner ,validateListing } = require("../middleware.js");
 
-const listingController = require("../controllers/listing.js")
+const listingController = require("../controllers/listings.js")
 
-// INDEX - GET /listings
-router.get("/", wrapAsync(listingController.index));
+router.route("/")
+.get(wrapAsync(listingController.index))
+.post(isLoggedIn,validateListing, wrapAsync(listingController.createListing));
+
+router.route("/:id")
+.get(wrapAsync(listingController.showListing))
+.put( isLoggedIn , isOwner, validateListing, wrapAsync(listingController.updateListing))
+.delete( isLoggedIn ,isOwner, wrapAsync(listingController.deleteListing));
 
 // NEW - GET /listings/new
 router.get("/new",isLoggedIn,listingController.renderNewForm );
 
-// CREATE - POST /listings
-router.post("/", isLoggedIn,validateListing, wrapAsync(listingController.createListing));
-
-// SHOW - GET /listings/:id
-router.get("/:id", wrapAsync(listingController.showListing));
-
 // EDIT - GET /listings/:id/edit
 router.get("/:id/edit",isLoggedIn,isOwner, wrapAsync(listingController.editlisting));
 
-// UPDATE - PUT /listings/:id
-router.put("/:id", isLoggedIn , isOwner, validateListing, wrapAsync(listingController.updateListing));
-
-// DELETE - DELETE /listings/:id
-router.delete("/:id", isLoggedIn ,isOwner, wrapAsync(listingController.deleteListing));
 
 module.exports = router;
