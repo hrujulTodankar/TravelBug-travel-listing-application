@@ -45,33 +45,45 @@ const sessionOptions = {
   },
 };
 
+// 1. Session Config
 app.use(session(sessionOptions));
-app.use(flash());
 
+// 2. Flash Config
+ app.use(flash());
+
+// 3. Passport Config (MUST come after session)
 app.use(passport.initialize());
 app.use(passport.session());
 
-passport.use(new LocalStrategy(User.authenticate())); // Use User model for authentication
-passport.serializeUser(User.serializeUser());
-passport.deserializeUser(User.deserializeUser());
-
-
+// 4. Global Locals (MUST come after passport.session)
 app.use((req, res, next) => {
-  res.locals.success = req.flash("success");
-  res.locals.error = req.flash("error");
-  res.locals.currUser = req.user ;
-  next();
+    res.locals.success = req.flash("success");
+    res.locals.error = req.flash("error");
+    res.locals.currUser = req.user;
+    console.log("--- DEBUG: Global middleware passing to next ---");
+    next(); // <--- Without this, EVERY route in your app will hang
 });
+
+// app.js
+
+// 1. Link the strategy to your User model's built-in authentication method
+passport.use(new LocalStrategy(User.authenticate())); 
+
+// 2. Tell Passport how to store the user in the session
+passport.serializeUser(User.serializeUser());   
+
+// 3. Tell Passport how to retrieve the user from the session
+passport.deserializeUser(User.deserializeUser());
 
 // convenience root
 app.get("/", (req, res) => {
   res.send("Hi, I am root");
 });
 
-// Optional: convenience redirect for someone visiting /new
-app.get("/new",isLoggedIn, (req, res) => {
-  return res.redirect(res.locals.redirectUrl || "/listings/new");
-});
+// // Optional: convenience redirect for someone visiting /new
+// app.get("/new",isLoggedIn, (req, res) => {
+//   return res.redirect(res.locals.redirectUrl || "/listings/new");
+// });
 
 // Mount listing routes at /listings
 app.use("/listings", listingsroutes);

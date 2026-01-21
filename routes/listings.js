@@ -12,16 +12,16 @@ router.route("/")
 .get(wrapAsync(listingController.index))
 .post(isLoggedIn,validateListing, wrapAsync(listingController.createListing));
 
+// NEW - GET /listings/new
+router.get("/new",wrapAsync(listingController.renderNewForm ));
+
+// EDIT - GET /listings/:id/edit
+router.get("/:id/edit",isLoggedIn,isOwner, wrapAsync(listingController.editlisting));
+
 router.route("/:id")
 .get(wrapAsync(listingController.showListing))
 .put( isLoggedIn , isOwner, validateListing, wrapAsync(listingController.updateListing))
 .delete( isLoggedIn ,isOwner, wrapAsync(listingController.deleteListing));
 
-// NEW - GET /listings/new
-router.get("/new",isLoggedIn,listingController.renderNewForm );
-
-// EDIT - GET /listings/:id/edit
-router.get("/:id/edit",isLoggedIn,isOwner, wrapAsync(listingController.editlisting));
-
-
 module.exports = router;
+
