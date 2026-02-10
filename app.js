@@ -1,6 +1,8 @@
 // app.js
 const express = require("express");
 const app = express();
+const multer  = require('multer');
+const upload = multer({ dest: 'uploads/' });
 const mongoose = require("mongoose");
 const path = require("path");
 const methodOverride = require("method-override");
@@ -19,7 +21,6 @@ const reviewsroutes = require("./routes/reviews.js");
 const userroutes = require("./routes/user.js");
 
 
-
 // Connect to MongoDB
 main().then(() => {
   console.log("connected to DB");
@@ -31,7 +32,7 @@ async function main() {
 
 app.set("view engine", "ejs");
 app.set("views", path.join(__dirname, "views"));
-app.use(express.urlencoded({ extended: true }));
+app.use(express.urlencoded({ extended: true })); // this is responsible for parsing the form data and making it available in req.body
 app.use(methodOverride("_method"));
 app.engine("ejs", ejsMate);
 app.use(express.static(path.join(__dirname, "public")));
@@ -45,17 +46,11 @@ const sessionOptions = {
   },
 };
 
-// 1. Session Config
 app.use(session(sessionOptions));
-
-// 2. Flash Config
- app.use(flash());
-
-// 3. Passport Config (MUST come after session)
+app.use(flash());
 app.use(passport.initialize());
 app.use(passport.session());
 
-// 4. Global Locals (MUST come after passport.session)
 app.use((req, res, next) => {
     res.locals.success = req.flash("success");
     res.locals.error = req.flash("error");
@@ -64,26 +59,14 @@ app.use((req, res, next) => {
     next(); // <--- Without this, EVERY route in your app will hang
 });
 
-// app.js
-
-// 1. Link the strategy to your User model's built-in authentication method
 passport.use(new LocalStrategy(User.authenticate())); 
-
-// 2. Tell Passport how to store the user in the session
 passport.serializeUser(User.serializeUser());   
-
-// 3. Tell Passport how to retrieve the user from the session
 passport.deserializeUser(User.deserializeUser());
 
-// convenience root
 app.get("/", (req, res) => {
   res.send("Hi, I am root");
 });
 
-// // Optional: convenience redirect for someone visiting /new
-// app.get("/new",isLoggedIn, (req, res) => {
-//   return res.redirect(res.locals.redirectUrl || "/listings/new");
-// });
 
 // Mount listing routes at /listings
 app.use("/listings", listingsroutes);

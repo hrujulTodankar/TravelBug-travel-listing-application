@@ -3,7 +3,7 @@ const Joi = require("joi");
 
 module.exports.listingSchema = Joi.object({
   title: Joi.string().required(),
-  desc: Joi.string().required(),
+  description: Joi.string().required(),
   image: Joi.object({
     url: Joi.string().allow("", null)
   }).optional(),

@@ -9,7 +9,7 @@ module.exports.index = async (req, res) => {
 };
 
 // NEW - Render the form to create a new listing
-module.exports.renderNewForm = (req, res) => {
+module.exports.renderNewForm = async (req, res) => {
     res.render("listings/new.ejs");
 };
 
@@ -40,17 +40,7 @@ module.exports.showListing = async (req, res, next) => {
 
 // CREATE - Save a new listing to the database
 module.exports.createListing = async (req, res) => {
-    const listingData = req.body.listing ?? req.body;
-    
-    const newListing = new Listing({
-        title: listingData.title,
-        description: listingData.description || listingData.desc,
-        image: listingData.image && listingData.image.url ? { url: listingData.image.url } : undefined,
-        price: listingData.price,
-        location: listingData.location,
-        country: listingData.country
-    });
-
+    const newListing = new Listing(req.body.listing);
     newListing.owner = req.user._id;
     await newListing.save();
 
