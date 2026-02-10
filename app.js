@@ -1,8 +1,6 @@
 // app.js
 const express = require("express");
 const app = express();
-const multer  = require('multer');
-const upload = multer({ dest: 'uploads/' });
 const mongoose = require("mongoose");
 const path = require("path");
 const methodOverride = require("method-override");
