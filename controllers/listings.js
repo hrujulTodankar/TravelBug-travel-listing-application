@@ -71,23 +71,27 @@ module.exports.editlisting = async (req, res, next) => {
 
 // UPDATE - Save the edited changes to the database
 module.exports.updateListing = async (req, res, next) => {
-    const { id } = req.params;
+    let { id } = req.params;
 
     if (!mongoose.Types.ObjectId.isValid(id)) {
         return next(new ExpressError(400, "Invalid listing ID format"));
     }
 
-    const updates = req.body.listing ?? req.body;
-    
-    // Check if listing exists before updating
-    let listing = await Listing.findByIdAndUpdate(id, { ...updates }, { runValidators: true });
+    let listing = await Listing.findByIdAndUpdate(id, { ...req.body.listing }, { new: true });
 
     if (!listing) {
         req.flash("error", "Could not update: Listing not found!");
         return res.redirect("/listings");
     }
 
-    req.flash("success", "Listing updated successfully!");
+    if(typeof req.file !== "undefined"){
+        let url = req.file.path;
+        let filename = req.file.filename;
+        listing.image = {url, filename};
+        await listing.save();
+    }
+
+    req.flash("success", "Listing Updated!");
     res.redirect(`/listings/${id}`);
 };
 
