@@ -66,7 +66,10 @@ module.exports.editlisting = async (req, res, next) => {
         return res.redirect("/listings");
     }
 
-    res.render("listings/edit.ejs", { listing });
+    let originalImage  = listing.image.url 
+    originalImage = originalImage.replace("/upload", "/upload/w_250"); // before displaying our original image , image would be of less pixels for preview 
+
+    res.render("listings/edit.ejs", { listing , originalImage });
 };
 
 // UPDATE - Save the edited changes to the database

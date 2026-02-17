@@ -1,9 +1,64 @@
 <% layout("/layouts/boilerplate") -%>
-<%= success %>
 <body>
+
+  <style>
+    #filters{
+      display:flex;
+      flex-wrap: wrap;
+    }
+
+    #filter{
+      text-align: center;
+      margin-right: 1rem;
+      margin-top: 1rem;
+      opacity: 0.5;
+    }
+
+    #filter:hover{
+      opacity : 1;
+      cursor:pointer ;
+    }
+
+    #filter p {
+      font-size: small;
+    }
+  </style>
+
+  <div id="filters">
+    <div id="filter">
+      <div><i class="fa-regular fa-map"></i></div>
+     <p>Map</p>
+    </div>
+
+    <div id="filter">
+      <div><i class="fa-solid fa-fire"></i></div>
+      <p>Trending</p>
+    </div>
+
+    <div id="filter">
+      <div><i class="fa-solid fa-house"></i></div>
+      <p>Homes</p>
+    </div>
+
+    <div id="filter">
+      <div><i class="fa-solid fa-mountain-city"></i></div>
+      <p>Iconic Cities</p>
+    </div>
+
+    <div id="filter">
+      <div><i class="fa-solid fa-umbrella-beach"></i></div>
+      <p>Beaches</p>
+    </div>
+
+     <div id="filter">
+      <div><i class="fa-solid fa-person-hiking"></i></div>
+      <p>Hikes</p>
+    </div>
+  </div>
+
     
-  <h3 class="m-3">All Listings</h3>
-<div class="row row-cols-lg-2 row-cols-md-2 row-cols-sm-2 row-cols-xs-2 ">
+  <!-- <h3 class="m-3">All Listings</h3> -->
+<div class="row row-cols-lg-2 row-cols-md-2 row-cols-sm-2 mt-3">
      <%for(let listing of alllisting ){ %>
     <div class="card col " style="width: 10rem;">
       <a href="/listings/<%= listing._id %>" class="listing-link">
