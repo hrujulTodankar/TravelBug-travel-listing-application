@@ -22,6 +22,16 @@
     #filter p {
       font-size: small;
     }
+
+    /* .tax-toggle {
+      border: 1px solid black;
+      border-radius: 1rem;
+      height: 2.5rem;
+      padding: 0.5rem;
+      margin-top: 0.5rem;
+      display: flex;
+      align-items: center;
+    } */
   </style>
 
   <div id="filters">
@@ -54,6 +64,13 @@
       <div><i class="fa-solid fa-person-hiking"></i></div>
       <p>Hikes</p>
     </div>
+
+    <div class="tax-toggle form-check-reverse form-switch">
+      <div class="form-check form-switch form-check-reverse">
+        <input class="form-check-input" type="checkbox" role="switch" id="switchCheckReverse">
+        <label class="form-check-label" for="switchCheckReverse">Display total after taxes</label>
+      </div>
+    </div>
   </div>
 
     
@@ -76,4 +93,13 @@
 <%}%>
 
 </div>
+
+<script>
+  document.addEventListener("DOMContentLoaded", () => {
+    let taxSwitch = document.getElementById("switchCheckReverse");
+    taxSwitch.addEventListener("click", () => {
+      console.log("clicked");
+    });
+  });
+</script>
 </body>

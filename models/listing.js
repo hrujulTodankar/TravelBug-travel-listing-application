@@ -26,10 +26,10 @@ const listingSchema = new Schema({
         type : Schema.Types.ObjectId,
         ref : "User",
     },
-    // category : {
-    //     type : String,
-    //     enum : ["Apartment" , "House" , "Villa" , "Cottage" , "Cabin" , "Bungalow" , "Farmhouse" , "Mansion" , "Castle" , "Treehouse" , "Yurt" , "Tiny House" , "Houseboat" , "Igloo" , "Lighthouse" , "Tent"]
-    // },
+    category : {
+        type : String,
+        enum : ["Apartment" , "House" , "Villa" , "Cottage" , "Cabin" , "Bungalow" , "Farmhouse" , "Mansion" , "Castle" , "Treehouse" , "Yurt" , "Tiny House" , "Houseboat" , "Igloo" , "Lighthouse" , "Tent"]
+    },
 
 });
 

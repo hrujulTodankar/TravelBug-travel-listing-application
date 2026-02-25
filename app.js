@@ -35,10 +35,18 @@ async function main() {
 
 app.set("view engine", "ejs");
 app.set("views", path.join(__dirname, "views"));
+app.disable("view cache"); // Disable template caching for development
+app.locals.cache = false; // Disable EJS template caching for development
 app.use(express.urlencoded({ extended: true })); // this is responsible for parsing the form data and making it available in req.body
 app.use(methodOverride("_method"));
 app.engine("ejs", ejsMate);
-app.use(express.static(path.join(__dirname, "public")));
+ejsMate.cache = false; // Disable ejsMate template caching
+// Serve static files with no caching for development
+app.use(express.static(path.join(__dirname, "public"), {
+  maxAge: 0,
+  etag: false,
+  lastModified: false
+}));
 
 const sessionOptions = {
   secret: "mysupersecretcode",
@@ -107,8 +115,8 @@ app.use("/listings/:id/reviews", reviewsroutes);
 app.use("/" , userroutes);
 
 // 404 handler - catch unmatched routes
-app.all(/(.*)/, (req, res, next) => {
-  next(new ExpressError(404, "Page not found"));
+app.use((req, res, next) => {
+  res.status(404).render("error.ejs", { message: "Page not found" });
 });
 
 // central error handler
