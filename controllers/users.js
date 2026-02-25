@@ -1,4 +1,4 @@
-const User = require("../models/user.js");
+const User = require("../models/user");
 
 module.exports.renderSignupForm = (req, res) => {
     res.render("listings/signup.ejs");
@@ -7,18 +7,21 @@ module.exports.renderSignupForm = (req, res) => {
 module.exports.Usersignup = async (req, res, next) => {
     try {
         let { username, email, password } = req.body;
-        const newUser = new User({ username, email });
+        const newUser = new User({ email, username });
         const registeredUser = await User.register(newUser, password);
-        
         req.login(registeredUser, (err) => {
-            if (err) return next(err);
-            req.flash("success", "Welcome to TravelBug");
-            res.redirect("/listings");
+            if (err) {
+                return next(err);
+            }
+            req.flash("success", "Welcome to TravelBug!");
+            req.session.save(() => {
+                res.redirect("/listings");
+            });
         });
     } catch (e) {
+        console.error("Signup error:", e.message);
         req.flash("error", e.message);
-        // We use return to stop execution so wrapAsync doesn't call next(e)
-        return res.redirect("/signup");
+        res.redirect("/signup");
     }
 };
 
@@ -26,18 +29,26 @@ module.exports.renderLoginForm = (req, res) => {
     res.render("listings/login.ejs");
 };
 
-// This function now only handles the redirect AFTER passport.authenticate runs
 module.exports.loginForm = async (req, res) => {
-console.log("--- DEBUG: Login Successful! Reached Controller ---");
-    req.flash("success", "Welcome back!");
+    req.flash("success", "Welcome back to TravelBug!");
     let redirectUrl = res.locals.redirectUrl || "/listings";
-    res.redirect(redirectUrl);
+    
+    // Clear the redirectUrl from session so it doesn't persist for future logins
+    if (req.session.redirectUrl) {
+        delete req.session.redirectUrl;
+    }
+
+    req.session.save(() => {
+        res.redirect(redirectUrl);
+    });
 };
 
 module.exports.logoutUser = (req, res, next) => {
     req.logout((err) => {
-        if (err) return next(err);
-        req.flash("success", "You are logged out!");
+        if (err) {
+            return next(err);
+        }
+        req.flash("success", "you are logged out!");
         res.redirect("/listings");
     });
 };

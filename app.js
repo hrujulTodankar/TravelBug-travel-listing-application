@@ -14,7 +14,7 @@ const session = require("express-session");
 const flash = require("connect-flash");
 const ExpressError = require("./utils/ExpressError.js");
 const passport  = require("passport");
-const LocalStrategy = require("passport-local");
+const LocalStrategy = require("passport-local").Strategy;
 const User = require("./models/user.js"); 
 const { saveRedirectUrl } = require("./middleware.js");
 const { isLoggedIn } = require("./middleware.js");
@@ -25,9 +25,9 @@ const userroutes = require("./routes/user.js");
 
 
 // Connect to MongoDB
-main().then(() => {
-  console.log("connected to DB");
-}).catch(err => console.log(err));
+
+mongoose.connection.on("connected", () => console.log("Mongoose connected to DB"));
+mongoose.connection.on("error", (err) => console.log("Mongoose connection error:", err));
 
 async function main() {
   await mongoose.connect('mongodb://127.0.0.1:27017/travelBug');
@@ -58,16 +58,45 @@ app.use((req, res, next) => {
     res.locals.success = req.flash("success");
     res.locals.error = req.flash("error");
     res.locals.currUser = req.user;
-    console.log("--- DEBUG: Global middleware passing to next ---");
-    next(); // <--- Without this, EVERY route in your app will hang
+    next(); 
 });
 
-passport.use(new LocalStrategy(User.authenticate())); 
-passport.serializeUser(User.serializeUser());   
+passport.use("local", User.createStrategy());
+passport.serializeUser(User.serializeUser());
 passport.deserializeUser(User.deserializeUser());
 
 app.get("/", (req, res) => {
   res.redirect("/listings");
+});
+
+app.get("/debug/users", async (req, res) => {
+  try {
+    const users = await User.find();
+    res.json({
+      userCount: users.length,
+      users: users.map(u => ({
+        _id: u._id,
+        username: u.username,
+        email: u.email,
+        hasHash: !!u.hash,
+        hasSalt: !!u.salt
+      }))
+    });
+  } catch (err) {
+    res.json({ error: err.message });
+  }
+});
+
+app.get("/debug/clear-users", async (req, res) => {
+  try {
+    const result = await User.deleteMany({});
+    res.json({
+      message: "All users deleted",
+      deletedCount: result.deletedCount
+    });
+  } catch (err) {
+    res.json({ error: err.message });
+  }
 });
 
 
@@ -78,12 +107,13 @@ app.use("/listings/:id/reviews", reviewsroutes);
 app.use("/" , userroutes);
 
 // 404 handler - catch unmatched routes
-app.all("{*path}", (req, res, next) => {
+app.all(/(.*)/, (req, res, next) => {
   next(new ExpressError(404, "Page not found"));
 });
 
 // central error handler
 app.use((err, req, res, next) => {
+  console.log("Error handled:", err);
   if (res.headersSent) {
     return next(err);
   }
@@ -92,7 +122,10 @@ app.use((err, req, res, next) => {
   res.render("error.ejs", { message });
 });
 
-const PORT = process.env.PORT || 8080;
-app.listen(PORT, () => {
-  console.log(`server is listening on port ${PORT}`);
-});
+const PORT = 8080;
+main().then(() => {
+  console.log("connected to DB");
+  app.listen(PORT, () => {
+    console.log(`server is listening on port ${PORT}`);
+  });
+}).catch(err => console.log(err));

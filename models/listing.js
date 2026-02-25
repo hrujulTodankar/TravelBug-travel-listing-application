@@ -25,7 +25,12 @@ const listingSchema = new Schema({
     owner : {
         type : Schema.Types.ObjectId,
         ref : "User",
-    }
+    },
+    // category : {
+    //     type : String,
+    //     enum : ["Apartment" , "House" , "Villa" , "Cottage" , "Cabin" , "Bungalow" , "Farmhouse" , "Mansion" , "Castle" , "Treehouse" , "Yurt" , "Tiny House" , "Houseboat" , "Igloo" , "Lighthouse" , "Tent"]
+    // },
+
 });
 
 listingSchema.post("findOneAndDelete" , async function(listing) { //whenever a listing is deleted , this middleware will be called

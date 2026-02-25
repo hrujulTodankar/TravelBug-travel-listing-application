@@ -1,7 +1,7 @@
 <% layout("/layouts/boilerplate") -%>
 
 <body>
-     <div class="wholecard p-3 offset-2" style="width: 18rem;" style="align-items: center ;">
+     <div class="wholecard p-3 offset-2" style="width: 18rem; align-items: center;">
   <img src="<%= onelisting.image.url %>" class="card-img-top" alt="listingimg">
   <div class="card-body">
     <h5 class="card-title mt-3"><%= onelisting.title %></h5>
@@ -27,8 +27,8 @@
  </div >
 
 
- <% if(currUser) { %>
  <div class="review col-8 offset-3 mb-3">
+ <% if(currUser) { %>
         <hr>
          <h5>Leave A Review</h5>
         <form action="/listings/<%= onelisting._id %>/reviews" method="POST" novalidate class="needs-validation">
@@ -62,24 +62,20 @@
 
         <p><b>All Reviews</b></p>
         <div class="row">
-        <div class="card col-5" style="width: 18rem;">
-           <div class="card-body">
-            <div class="card-title">
-            <% for(let review of onelisting.reviews) { %>
-              <p class="starability-result" data-rating="<%= review.rating %>"></p>
-              <p>Rated: <%= review.rating %> stars </p>
-              <p>Comment : <i><%= review.comment %></i></p>
-              <p>Author : @<i><%= review.author ? review.author.username : 'Unknown' %></i></p>
-              <form method="post" action="/listings/<%= onelisting._id %>/reviews/<%= review._id %>?_method=DELETE" >
-                <button class="btn btn-danger btn-sm">delete</button>
-              </form>
-              <hr>
-            <% } %>
-
-           
+          <% for(let review of onelisting.reviews) { %>
+            <div class="card col-5 mb-3 me-3">
+              <div class="card-body">
+                <h5 class="card-title">@<i><%= review.author ? review.author.username : 'Unknown' %></i></h5>
+                <p class="starability-result card-text" data-rating="<%= review.rating %>"></p>
+                <p class="card-text">Comment : <i><%= review.comment %></i></p>
+                <% if(currUser && review.author && review.author.equals(currUser._id)) { %>
+                  <form method="post" action="/listings/<%= onelisting._id %>/reviews/<%= review._id %>?_method=DELETE" >
+                    <button class="btn btn-danger btn-sm">delete</button>
+                  </form>
+                <% } %>
+              </div>
             </div>
-           </div>
-        </div>
+          <% } %>
         </div>
        </div>
       

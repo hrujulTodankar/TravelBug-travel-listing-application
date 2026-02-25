@@ -14,12 +14,10 @@ module.exports.isLoggedIn = (req, res, next) => {
 
 // middleware.js
 module.exports.saveRedirectUrl = (req, res, next) => {
-    console.log("--- DEBUG: Inside saveRedirectUrl ---");
     if (req.session.redirectUrl) {
         res.locals.redirectUrl = req.session.redirectUrl;
     }
-    console.log("--- DEBUG: Calling next() from saveRedirectUrl ---");
-    next(); // <--- This MUST be outside the 'if' brackets
+    next(); 
 };
 
 module.exports.isOwner = async (req, res, next) => {
