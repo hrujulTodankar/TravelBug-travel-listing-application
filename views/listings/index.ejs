@@ -5,6 +5,7 @@
     #filters{
       display:flex;
       flex-wrap: wrap;
+      align-items: center;
     }
 
     #filter{
@@ -23,15 +24,24 @@
       font-size: small;
     }
 
-    /* .tax-toggle {
+    .tax-toggle {
       border: 1px solid black;
       border-radius: 1rem;
-      height: 2.5rem;
+      height: 2.75rem;
       padding: 0.5rem;
       margin-top: 0.5rem;
       display: flex;
       align-items: center;
-    } */
+      margin-left: 5rem;
+    }
+
+    .form-check-label {
+      padding-left: 1rem;
+    }
+
+    .tax-info {
+      display: none;
+    }
   </style>
 
   <div id="filters">
@@ -86,6 +96,7 @@
       <div class="card-body">
       <p class="card-title"><b><%= listing.title %></b></p>
       <p class="card-price" > &#x20b9; <%= listing.price.toLocaleString("en-IN") %> / night</p>
+      <i class="tax-info"><%= (listing.price * 0.18) %></i>
       <!-- <p class="card-text"><%= listing.description %></p> -->
     </div>
     </a>
@@ -98,8 +109,16 @@
   document.addEventListener("DOMContentLoaded", () => {
     let taxSwitch = document.getElementById("switchCheckReverse");
     taxSwitch.addEventListener("click", () => {
-      console.log("clicked");
+      let taxInfo = document.getElementsByClassName("tax-info");
+      for (let info of taxInfo) {
+        if (taxSwitch.checked) {
+          info.style.display = "inline";
+        } else {
+          info.style.display = "none";
+        }
+      }
     });
   });
 </script>
 </body>
+  
