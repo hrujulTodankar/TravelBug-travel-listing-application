@@ -16,8 +16,10 @@ module.exports.renderNewForm = async (req, res) => {
 // SHOW - Detailed view of a single listing
 module.exports.showListing = async (req, res, next) => {
     const { id } = req.params;
+    console.log("showListing called with id:", id);
 
     if (!mongoose.Types.ObjectId.isValid(id)) {
+        console.log("Invalid ID, URL:", req.originalUrl);
         return next(new ExpressError(400, "Invalid listing ID format"));
     }
 
