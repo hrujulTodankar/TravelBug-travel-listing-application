@@ -26,7 +26,7 @@ const userroutes = require("./routes/user.js");
 
 // CONNECT TO MONGODB
 
-const MONGODB_URL = "mongodb://127.0.0.1:27017/travelBug";
+;
 const MONGODB_ATLAS_URL = process.env.ATLASDB_URL;
 
 async function main() {
@@ -64,7 +64,7 @@ app.use(express.static(path.join(__dirname, "public"), {
 const store = new MongoStore({
   mongoUrl: MONGODB_ATLAS_URL,
   crypto: {
-    secret: "mysupersecretcode",
+    secret: process.env.SECRET,
   },
   touchAfter: 24 * 60 * 60, // time period in seconds
 });
@@ -75,7 +75,7 @@ store.on("error", (e) => {
 
 const sessionOptions = {
   store: store,
-  secret: "mysupersecretcode",
+  secret: process.env.SECRET,
   resave: false,
   saveUninitialized: false,
   cookie: {
