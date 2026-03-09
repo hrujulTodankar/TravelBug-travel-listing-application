@@ -157,7 +157,7 @@ app.use((err, req, res, next) => {
   res.render("error.ejs", { message });
 });
 
-const PORT = 8080;
+const PORT = process.env.PORT || 8080;
 main().then(() => {
   console.log("connected to DB");
   app.listen(PORT, () => {
