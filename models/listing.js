@@ -42,4 +42,4 @@ listingSchema.post("findOneAndDelete" , async function(listing) { //whenever a l
 });
 
 const Listing = mongoose.model("Listing" , listingSchema)
-module.exports = Listing;
+module.exports = Listing

@@ -48,13 +48,12 @@ main().catch(err => console.log(err));
 
 app.set("view engine", "ejs");
 app.set("views", path.join(__dirname, "views"));
-app.disable("view cache"); // Disable template caching for development
-app.locals.cache = false; // Disable EJS template caching for development
 app.use(express.urlencoded({ extended: true })); // this is responsible for parsing the form data and making it available in req.body
 app.use(methodOverride("_method"));
 app.engine("ejs", ejsMate);
-ejsMate.cache = false; // Disable ejsMate template caching
-// Serve static files with no caching for development
+// ejsMate.cache = false; // Disable ejsMate template caching
+// // Serve static files with no caching for development
+
 app.use(express.static(path.join(__dirname, "public"), {
   maxAge: 0,
   etag: false,
@@ -97,7 +96,7 @@ app.use((req, res, next) => {
     next(); 
 });
 
-passport.use("local", User.createStrategy());
+passport.use(new LocalStrategy(User.authenticate()));
 passport.serializeUser(User.serializeUser());
 passport.deserializeUser(User.deserializeUser());
 

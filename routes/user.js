@@ -12,13 +12,17 @@ router.route("/signup")
 
 
 router.get("/login", userController.renderLoginForm);
-router.post("/login",
-    saveRedirectUrl,
+router.post("/login",saveRedirectUrl,
     passport.authenticate("local", {
         failureRedirect: "/login",
         failureFlash: true,
     }),
-    userController.loginForm
+    (req, res) => {
+        req.flash("success", "Welcome back!");
+        const redirectUrl = "/listings";
+        res.redirect(redirectUrl);
+        delete res.locals.redirectUrl;
+    }
 );    
 router.get("/logout", userController.logoutUser);
 
