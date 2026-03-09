@@ -11,6 +11,7 @@ const path = require("path");
 const methodOverride = require("method-override");
 const ejsMate = require("ejs-mate");
 const session = require("express-session");
+const MongoStore = require("connect-mongo").default;
 const flash = require("connect-flash");
 const ExpressError = require("./utils/ExpressError.js");
 const passport  = require("passport");
@@ -23,15 +24,27 @@ const listingsroutes = require("./routes/listings.js"); // <-- make sure filenam
 const reviewsroutes = require("./routes/reviews.js");
 const userroutes = require("./routes/user.js");
 
+// CONNECT TO MONGODB
 
-// Connect to MongoDB
-
-mongoose.connection.on("connected", () => console.log("Mongoose connected to DB"));
-mongoose.connection.on("error", (err) => console.log("Mongoose connection error:", err));
+const MONGODB_URL = "mongodb://127.0.0.1:27017/travelBug";
+const MONGODB_ATLAS_URL = process.env.ATLASDB_URL;
 
 async function main() {
-  await mongoose.connect('mongodb://127.0.0.1:27017/travelBug');
+  try {
+    await mongoose.connect(MONGODB_ATLAS_URL);
+    console.log("✅ Actual Connection Established to Atlas");
+  } catch (err) {
+    console.error("❌ Connection failed immediately:", err);
+  }
 }
+
+// Also add this listener to catch errors that happen AFTER the initial start
+mongoose.connection.on('error', err => {
+  console.error("Mongoose connection error:", err);
+});
+
+main().catch(err => console.log(err));
+
 
 app.set("view engine", "ejs");
 app.set("views", path.join(__dirname, "views"));
@@ -48,11 +61,26 @@ app.use(express.static(path.join(__dirname, "public"), {
   lastModified: false
 }));
 
+const store = new MongoStore({
+  mongoUrl: MONGODB_ATLAS_URL,
+  crypto: {
+    secret: "mysupersecretcode",
+  },
+  touchAfter: 24 * 60 * 60, // time period in seconds
+});
+
+store.on("error", (e) => {
+  console.log("Session store error:", e);
+});
+
 const sessionOptions = {
+  store: store,
   secret: "mysupersecretcode",
   resave: false,
   saveUninitialized: false,
   cookie: {
+    expires: Date.now() + 1000 * 60 * 60 * 24 * 7, // 1 week
+    maxAge: 1000 * 60 * 60 * 24 * 7, // 1 week
     httpOnly: true,
   },
 };
@@ -77,36 +105,35 @@ app.get("/", (req, res) => {
   res.redirect("/listings");
 });
 
-app.get("/debug/users", async (req, res) => {
-  try {
-    const users = await User.find();
-    res.json({
-      userCount: users.length,
-      users: users.map(u => ({
-        _id: u._id,
-        username: u.username,
-        email: u.email,
-        hasHash: !!u.hash,
-        hasSalt: !!u.salt
-      }))
-    });
-  } catch (err) {
-    res.json({ error: err.message });
-  }
-});
+// app.get("/debug/users", async (req, res) => {
+//   try {
+//     const users = await User.find();
+//     res.json({
+//       userCount: users.length,
+//       users: users.map(u => ({
+//         _id: u._id,
+//         username: u.username,
+//         email: u.email,
+//         hasHash: !!u.hash,
+//         hasSalt: !!u.salt
+//       }))
+//     });
+//   } catch (err) {
+//     res.json({ error: err.message });
+//   }
+// });
 
-app.get("/debug/clear-users", async (req, res) => {
-  try {
-    const result = await User.deleteMany({});
-    res.json({
-      message: "All users deleted",
-      deletedCount: result.deletedCount
-    });
-  } catch (err) {
-    res.json({ error: err.message });
-  }
-});
-
+// app.get("/debug/clear-users", async (req, res) => {
+//   try {
+//     const result = await User.deleteMany({});
+//     res.json({
+//       message: "All users deleted",
+//       deletedCount: result.deletedCount
+//     });
+//   } catch (err) {
+//     res.json({ error: err.message });
+//   }
+// });
 
 
 // Mount listing routes at /listings
